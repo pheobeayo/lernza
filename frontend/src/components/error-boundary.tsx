@@ -21,10 +21,9 @@ function classifyError(err: Error): ErrorKind {
 
   if (
     msg.includes("contract") ||
-    msg.includes("revert") ||
-    msg.includes("execution reverted") ||
-    msg.includes("call revert exception") ||
-    msg.includes("invalid opcode") ||
+    msg.includes("hosterror") ||
+    msg.includes("error(contract") ||
+    msg.includes("transaction simulation failed") ||
     name.includes("contracterror")
   )
     return "contract"

@@ -14,7 +14,6 @@ export function setupGlobalErrorHandlers() {
       console.error(error)
       console.groupEnd()
     }
-    event.preventDefault()
   })
 
   window.addEventListener("error", (event) => {
@@ -36,11 +35,12 @@ export async function safeContractCall<T>(fn: () => Promise<T>): Promise<T> {
     const raw = err instanceof Error ? err : new Error(String(err))
 
     if (
-      raw.message.includes("execution reverted") ||
-      raw.message.includes("call revert exception")
+      raw.message.includes("HostError") ||
+      raw.message.includes("Error(Contract") ||
+      raw.message.includes("transaction simulation failed")
     ) {
-      const match = raw.message.match(/reason="([^"]+)"/)
-      raw.message = match ? `Contract reverted: ${match[1]}` : "Contract call reverted."
+      const match = raw.message.match(/Error\(Contract, #(\d+)\)/)
+      raw.message = match ? `Contract error #${match[1]}: ${raw.message}` : `Contract call failed: ${raw.message}`
     } else if (
       raw.message.includes("could not detect network") ||
       raw.message.includes("failed to fetch")
