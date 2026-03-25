@@ -7,6 +7,7 @@ import { Dashboard } from "@/pages/dashboard"
 import { WorkspaceView } from "@/pages/workspace"
 import { Profile } from "@/pages/profile"
 import { NotFound } from "@/pages/not-found"
+import { ErrorBoundary } from "@/components/error-boundary"
 import { CreateQuest } from "@/pages/create-quest"
 
 const VALID_PAGES = ["landing", "dashboard", "profile", "create-quest"] as const
@@ -14,7 +15,6 @@ type Page = (typeof VALID_PAGES)[number] | "workspace" | "404"
 
 function pathToPage(pathname: string): { page: Page; workspaceId: number | null } {
   const clean = pathname.replace(/\/+$/, "") || "/"
-
   if (clean === "/") return { page: "landing", workspaceId: null }
   if (clean === "/dashboard") return { page: "dashboard", workspaceId: null }
   if (clean === "/profile") return { page: "profile", workspaceId: null }
@@ -22,7 +22,6 @@ function pathToPage(pathname: string): { page: Page; workspaceId: number | null 
 
   const wsMatch = clean.match(/^\/workspace\/(\d+)$/)
   if (wsMatch) return { page: "workspace", workspaceId: Number(wsMatch[1]) }
-
   return { page: "404", workspaceId: null }
 }
 
@@ -89,12 +88,16 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Navbar activePage={state.page} onNavigate={handleNavigate} />
-      <main>{renderPage()}</main>
-      <Analytics />
-      <SpeedInsights />
-    </div>
+    <ErrorBoundary githubRepo="https://github.com/lernza/lernza">
+      <div className="min-h-screen bg-background text-foreground">
+        <Navbar activePage={state.page} onNavigate={handleNavigate} />
+        <ErrorBoundary key={`${state.page}-${state.workspaceId ?? ""}`}>
+          <main>{renderPage()}</main>
+        </ErrorBoundary>
+        <Analytics />
+        <SpeedInsights />
+      </div>
+    </ErrorBoundary>
   )
 }
 
